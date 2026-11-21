@@ -143,6 +143,11 @@ function fanGeo(pts){const pos=[];for(let i=1;i<pts.length-1;i++)[pts[0],pts[i],
 const ring=(c,r,axisUp,tube,mat)=>{const t=new THREE.Mesh(new THREE.TorusGeometry(r,tube,8,96),mat);t.position.copy(c);if(axisUp)t.rotation.x=Math.PI/2;return t};
 function faceColor(S,fi){if(S.meta.type==='prism')return fi===0?C.taban:fi===1?C.ust:C.yan[(fi-2)%C.yan.length];return fi===0?C.taban:C.yan[(fi-1)%C.yan.length]}
 
+let _ctex=null;
+function cubeTex(){if(_ctex)return _ctex;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ const g=x.createLinearGradient(0,0,128,128);g.addColorStop(0,'#FFFFFF');g.addColorStop(1,'#DCEAF7');x.fillStyle=g;x.fillRect(0,0,128,128);
+ x.strokeStyle='#1E3A8A';x.lineWidth=7;x.strokeRect(3.5,3.5,121,121);x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=3;x.strokeRect(10,10,108,108);
+ _ctex=new THREE.CanvasTexture(c);_ctex.colorSpace=THREE.SRGBColorSpace;_ctex.anisotropy=4;return _ctex}
 /* ============ LABORATUVAR ============ */
 const LAB={k:'dprizma',d:{},tg:{yuz:1,ayrit:1,kose:1,adlar:1,olcu:1,yuk:0,seffaf:0,birim:0,yk:0,ck:0,ana:1,yyy:0,yc:1}};
 let lv3;
@@ -186,8 +191,8 @@ function labBuild(keep){const s=SOLIDS[LAB.k],S=s.make(LAB.d),t=LAB.tg,v=lv3;v.c
   if(t.yk){const dm=new THREE.MeshStandardMaterial({color:C.diag,transparent:true,opacity:.85});let c=0;S.F.forEach(f=>{const n=f.length;for(let i=0;i<n;i++)for(let j=i+2;j<n;j++){if(i===0&&j===n-1)continue;G.add(rod(S.V[f[i]],S.V[f[j]],er*.6,dm));c++}});v.label(`Yüzey köşegeni: ${c}`,V3(0,H+R*.35,0),'lbl klb')}
   if(t.ck&&S.meta.type==='prism'){const share=(i,j)=>S.F.some(f=>f.includes(i)&&f.includes(j));const cm=new THREE.MeshStandardMaterial({color:0xDB2777});let c=0;
    for(let i=0;i<S.V.length;i++)for(let j=i+1;j<S.V.length;j++)if(!share(i,j)){G.add(rod(S.V[i],S.V[j],er*1.1,cm));c++}v.label(`Cisim köşegeni: ${c}`,V3(0,H+R*.2,0),'lbl clb')}
-  if(t.birim&&S.meta.box){const[a,b,c]=S.meta.box;v._lastL=0;const N=a*b*c,ig=new THREE.BoxGeometry(.92,.92,.92),im=new THREE.MeshStandardMaterial({color:0x60A5FA,roughness:.5,transparent:true,opacity:.95});const I=new THREE.InstancedMesh(ig,im,N);let k=0;const M=new THREE.Matrix4();
-   for(let y=0;y<c;y++)for(let z=0;z<b;z++)for(let x=0;x<a;x++){M.makeTranslation(-a/2+.5+x,.5+y,-b/2+.5+z);I.setMatrixAt(k++,M)}I.count=0;G.add(I);const t0=performance.now(),per=Math.max(220,1600/c);
+  if(t.birim&&S.meta.box){const[a,b,c]=S.meta.box;v._lastL=0;const N=a*b*c,ig=new THREE.BoxGeometry(.996,.996,.996),im=new THREE.MeshStandardMaterial({map:cubeTex(),roughness:.6});const I=new THREE.InstancedMesh(ig,im,N);let k=0;const M=new THREE.Matrix4(),LC=[new THREE.Color(0x7DD3FC),new THREE.Color(0x38BDF8)];
+   for(let y=0;y<c;y++)for(let z=0;z<b;z++)for(let x=0;x<a;x++){M.makeTranslation(-a/2+.5+x,.5+y,-b/2+.5+z);I.setColorAt(k,LC[y%2]);I.setMatrixAt(k++,M)}I.count=0;G.add(I);const t0=performance.now(),per=Math.max(220,1600/c);
    const info=el('div','fillinfo');$('#labVp').append(info);v.onFrame=()=>{const L=Math.min(c,Math.floor((performance.now()-t0)/per)+1);if(L!==v._lastL){v._lastL=L;sfx('pop',L/c);if(L===c)setTimeout(()=>sfx('chime'),140)}I.count=L*a*b;I.instanceMatrix.needsUpdate=true;info.innerHTML=`Taban: ${a} × ${b} = <b>${a*b}</b> birim küp • Katman: <b>${L}</b> / ${c} → <b>${L*a*b}</b> birim küp`+(L===c?` = <b>${N} cm³</b>`:'');if(L===c)v.onFrame=null}}
   else{v.onFrame=null;$$('#labVp .fillinfo').forEach(x=>x.remove())}}
  else{const r=S.r,h=S.h||0,er=Math.max(.03,r*.02),em=new THREE.MeshStandardMaterial({color:C.ink});
@@ -426,6 +431,187 @@ function gvPanel(){const V=views(GV.h),n=GV.h.flat().reduce((a,b)=>a+b,0);
   (ok.every(Boolean)?`<div class="tdone">🎉 Harika! Görünümler eşleşti. Kullandığın küp: <b>${n}</b>. Aynı görünümleri daha az ya da daha çok küple veren başka yapılar da kurulabilir. Dene!</div>`:'<p class="note">Yeşil işaret alan görünüm hedefle aynı demektir.</p>');
  if(ok.every(Boolean)&&!GV.task.done){GV.task.done=true;sfx('chime')}}
 
+
+/* ================================================================
+   OYUNLAR
+   ================================================================ */
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const GCAT={
+ avci:{ad:'Cisim Avcısı',ic:'🔎',d:'İpuçlarından cismi bul'},
+ say:{ad:'Say Bakalım',ic:'🔢',d:'Köşe, ayrıt ve yüz sayıları'},
+ acinim:{ad:'Açınım mı?',ic:'📦',d:'Bu şekil katlanınca küp olur mu?'},
+ eslestir:{ad:'Açınım Eşleştir',ic:'🧩',d:'Açınım hangi cismin?'},
+ gorunum:{ad:'Görünüm Dedektifi',ic:'👁️',d:'Yapının görünümünü bul'},
+ hesap:{ad:'Alan ve Hacim',ic:'📐',d:'Hacim, yüzey alanı, birimler'}};
+const GTAG={
+ ayrit:{ad:'Köşe, ayrıt ve yüzü karıştırma',ip:'Köşe: ayrıtların birleştiği nokta. Ayrıt: iki yüzün kesiştiği doğru parçası. Yüz: cismi çevreleyen düz yüzeyler.',go:'lab-aprizma'},
+ acinim:{ad:'Açınımı zihinde katlama',ip:'Küp açınımında bir sırada en fazla 4 kare olur, 2×2 kare bloğu olmaz ve katlanınca iki kare aynı yüze gelmez.',go:'acinim-kup'},
+ cisim:{ad:'Cisimleri ayırt etme',ip:'Prizmanın birbirine eş iki tabanı vardır; piramidin bir tabanı ve bir tepe noktası vardır. Silindir ve koninin tabanı dairedir.',go:'lab-uprizma'},
+ eslesme:{ad:'Açınımı cisimle eşleştirme',ip:'Açınımdaki taban şekillerine bak: iki eş çokgen → prizma, bir çokgen ve üçgenler → piramit, iki daire → silindir, daire dilimi → koni.',go:'acinim-silindir'},
+ gorunum:{ad:'Yön karıştırma',ip:'Önden görünümde yapıya karşıdan bakarsın. Sağdan bakınca yapının önü sol tarafında kalır. Üstten görünümde yükseklik görünmez.',go:'gorunum'},
+ hacimAlan:{ad:'Hacim ile yüzey alanını karıştırma',ip:'Hacim cismin kapladığı yerdir (cm³) = taban alanı × yükseklik. Yüzey alanı dış yüzlerin alanları toplamıdır (cm²).',go:'lab-dprizma'},
+ piCarp:{ad:'Daire alanı ile çevresini karıştırma',ip:'Daire alanı = π·r², çevresi = 2·π·r. Silindirin hacmi = taban alanı (π·r²) × yükseklik.',go:'lab-silindir'},
+ birim:{ad:'Hacim birimleri',ip:'1 L = 1 dm³ = 1000 cm³ ve 1 mL = 1 cm³.',go:'lab-kup'},
+ genel:{ad:'Dikkat',ip:'Soruyu yeniden oku; Atölye\'de cismi döndürerek kontrol et.',go:null}};
+const PRAISE=['Harika! ✔','Süper gidiyorsun! 🚀','Tam isabet! 🎯','Mükemmel! 🌟','Usta işi! 🏅'];
+
+/* ---------- çizimler ---------- */
+function isoSVG(h){const N=h.length,s=26,a=s*.866,b=s*.5,cub=[];for(let z=0;z<N;z++)for(let x=0;x<N;x++)for(let y=0;y<h[z][x];y++)cub.push([x,y,z]);
+ cub.sort((p,q)=>(p[0]+p[2])-(q[0]+q[2])||p[1]-q[1]||p[0]-q[0]);
+ const P=(x,y,z)=>[(x-z)*a,(x+z)*b-y*s];let g='',xs=[],ys=[];
+ const poly=(pts,f)=>{pts.forEach(p=>{xs.push(p[0]);ys.push(p[1])});return `<polygon points="${pts.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')}" fill="${f}" stroke="#0F172A" stroke-width="1.4" stroke-linejoin="round"/>`};
+ for(let z=0;z<N;z++)for(let x=0;x<N;x++)g+=poly([P(x,0,z),P(x+1,0,z),P(x+1,0,z+1),P(x,0,z+1)],'#F1F5F9');
+ for(const[x,y,z]of cub){g+=poly([P(x,y+1,z),P(x+1,y+1,z),P(x+1,y+1,z+1),P(x,y+1,z+1)],'#FBBF24');g+=poly([P(x,y,z+1),P(x+1,y,z+1),P(x+1,y+1,z+1),P(x,y+1,z+1)],'#0EA5E9');g+=poly([P(x+1,y,z),P(x+1,y,z+1),P(x+1,y+1,z+1),P(x+1,y+1,z)],'#9D174D')}
+ const on=P(N/2,0,N+.9),sg=P(N+.9,0,N/2);g+=`<text x="${on[0]}" y="${on[1]+6}" text-anchor="middle" font-size="13" font-weight="800" fill="#0369A1">ÖN ↗</text><text x="${sg[0]}" y="${sg[1]+6}" text-anchor="middle" font-size="13" font-weight="800" fill="#9D174D">↖ SAĞ</text>`;
+ xs.push(on[0]-30,sg[0]+30);ys.push(on[1]+14,sg[1]+14);const mnx=Math.min(...xs)-6,mny=Math.min(...ys)-6,W=Math.max(...xs)-mnx+6,H=Math.max(...ys)-mny+6;
+ return `<svg class="iso" viewBox="${mnx} ${mny} ${W} ${H}" aria-hidden="true">${g}</svg>`}
+function cellsSVG(cells,col='#FDBA74'){const xs=cells.map(c=>c[0]),ys=cells.map(c=>c[1]),mx=Math.min(...xs),my=Math.min(...ys),W=Math.max(...xs)-mx+1,H=Math.max(...ys)-my+1;
+ return `<svg class="netsvg" viewBox="-.15 -.15 ${W+.3} ${H+.3}" aria-hidden="true">${cells.map(([x,y])=>`<rect x="${x-mx}" y="${y-my}" width=".96" height=".96" rx=".06" fill="${col}" stroke="#0F172A" stroke-width=".05"/>`).join('')}</svg>`}
+function netArt(k){const F='#FDBA74',T='#5EEAD4',st='stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round"';let g='';const R=(x,y,w,h,f)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${st}/>`,Pg=(pts,f)=>`<polygon points="${pts}" fill="${f}" ${st}/>`;
+ if(k==='kup'){[[30,0],[0,30],[30,30],[60,30],[90,30],[30,60]].forEach(([x,y])=>g+=R(x+10,y+10,30,30,F));return wrap(g,140,110)}
+ if(k==='dprizma'){g+=R(40,10,50,24,T)+R(16,34,24,30,F)+R(40,34,50,30,F)+R(90,34,24,30,F)+R(114,34,50,30,F)+R(40,64,50,24,T);return wrap(g,180,100)}
+ if(k==='uprizma'){g+=R(10,40,40,36,F)+R(50,40,40,36,F)+R(90,40,40,36,F)+Pg('50,40 90,40 70,8',T)+Pg('50,76 90,76 70,108',T);return wrap(g,140,116)}
+ if(k==='kpiramit'){g+=R(45,40,40,40,T)+Pg('45,40 85,40 65,6',F)+Pg('85,40 85,80 119,60',F)+Pg('45,80 85,80 65,114',F)+Pg('45,40 45,80 11,60',F);return wrap(g,130,120)}
+ if(k==='aprizma'){for(let i=0;i<6;i++)g+=R(8+i*24,40,24,36,F);const hx=(cx,cy)=>Array.from({length:6},(_,i)=>{const t=Math.PI/3*i;return (cx+12*Math.cos(t)).toFixed(1)+','+(cy+12*Math.sin(t)).toFixed(1)}).join(' ');g+=Pg(hx(32,29),T)+Pg(hx(32,87),T);return wrap(g,160,110)}
+ if(k==='silindir'){g+=R(20,34,110,46,F)+`<circle cx="75" cy="17" r="17" fill="${T}" ${st}/><circle cx="75" cy="97" r="17" fill="${T}" ${st}/>`;return wrap(g,150,120)}
+ if(k==='koni'){g+=`<path d="M20 20 L120 20 A100 100 0 0 1 70 106.6 Z" fill="${F}" ${st}/><circle cx="118" cy="98" r="22" fill="${T}" ${st}/>`;return wrap(g,150,126)}
+ if(k==='dpiramit'){g+=R(40,36,56,36,T)+Pg('40,36 96,36 68,4',F)+Pg('96,36 96,72 126,54',F)+Pg('40,72 96,72 68,104',F)+Pg('40,36 40,72 10,54',F);return wrap(g,136,110)}
+ return ''}
+const wrap=(g,w,h)=>`<svg class="netart" viewBox="0 0 ${w} ${h}" aria-hidden="true">${g}</svg>`;
+function gridSVG(M,vert){return viewSVG(M,vert)}
+
+/* ---------- küp açınımı kümesi ---------- */
+let NETKEYS=null;
+function netKey(cells){const sym=[(x,y)=>[x,y],(x,y)=>[-x,y],(x,y)=>[x,-y],(x,y)=>[-x,-y],(x,y)=>[y,x],(x,y)=>[-y,x],(x,y)=>[y,-x],(x,y)=>[-y,-x]];let best=null;
+ for(const s of sym){const pts=cells.map(([x,y])=>s(x,y)),mx=Math.min(...pts.map(p=>p[0])),my=Math.min(...pts.map(p=>p[1]));const k=pts.map(([x,y])=>(x-mx)+','+(y-my)).sort().join(';');if(!best||k<best)best=k}return best}
+function netKeys(){if(!NETKEYS){NETKEYS=new Map();boxNets().forEach((n,i)=>NETKEYS.set(netKey(n.cells),i))}return NETKEYS}
+function randHexomino(){const set=new Map([['0,0',[0,0]]]);while(set.size<6){const c=pick([...set.values()]),d=pick([[1,0],[-1,0],[0,1],[0,-1]]),n=[c[0]+d[0],c[1]+d[1]];set.set(n.join(','),n)}return [...set.values()]}
+
+/* ---------- soru üreticileri ---------- */
+const CLUE={kup:['Bütün yüzlerim birbirine eş kare.','12 ayrıtımın hepsi aynı uzunlukta.','6 yüzüm, 12 ayrıtım ve 8 köşem var; hepsi eş karelerden.'],
+ dprizma:['6 yüzüm var; karşılıklı yüzlerim eş dikdörtgenler.','Bir ayakkabı kutusu bana benzer.'],
+ kprizma:['İki tabanım kare, 4 yan yüzüm birbirine eş dikdörtgen.'],
+ uprizma:['5 yüzüm var: 2 üçgen taban ve 3 dikdörtgen yan yüz.','9 ayrıtım ve 6 köşem var.'],
+ aprizma:['8 yüzüm var; iki tabanım altıgen.','18 ayrıtım ve 12 köşem var.'],
+ dpiramit:['Tabanım dikdörtgen; dört üçgen yan yüzüm bir tepe noktasında birleşir.'],
+ kpiramit:['5 yüzüm, 8 ayrıtım ve 5 köşem var; tabanım kare.','Mısır piramitleri bana benzer.'],
+ silindir:['İki tabanım birbirine eş daire; köşem yok.','Yanal yüzümü açarsan bir dikdörtgen olur.'],
+ koni:['Bir dairesel tabanım ve bir tepe noktam var.','Yanal yüzümün açınımı bir daire dilimidir.','Dondurma külahı bana benzer.'],
+ kure:['Köşem, ayrıtım ve düz yüzüm yok; her noktam merkezime eşit uzaklıkta.','Bir top bana benzer.']};
+const SK=Object.keys(CLUE);
+const optSolid=k=>`<span class="oi">${icon(k)}</span><span>${SOLIDS[k].ad}</span>`;
+function solidOpts(ans,pool,tag){const others=shuffle(pool.filter(k=>k!==ans)).slice(0,3);return shuffle([ans,...others]).map(k=>({label:optSolid(k),val:k,tag:k===ans?null:tag}))}
+const GEN={
+ avci(){const k=pick(SK),c=pick(CLUE[k]);return {cat:'avci',kind:'choice',grid:true,prompt:`<p class="qk">Ben hangi cisimim?</p><div class="clue">“${c}”</div>`,options:solidOpts(k,SK,'cisim'),answer:k,answerText:SOLIDS[k].ad,explain:`${SOLIDS[k].def}`,go:'lab-'+k}},
+ say(){const k=pick(['kup','dprizma','uprizma','aprizma','dpiramit','kpiramit']),S=SOLIDS[k].make(defaults(k)),cc={kose:S.V.length,ayrit:polyEdges(S).length,yuz:S.F.length},w=pick(['kose','ayrit','yuz']),AD={kose:'köşesi',ayrit:'ayrıtı',yuz:'yüzü'};
+  return {cat:'say',kind:'keypad',max:2,prompt:`<div class="qrow"><div class="qart">${icon(k)}</div><div><p class="qk">Say bakalım!</p><p><b>${SOLIDS[k].ad}</b> cisminin kaç <b>${AD[w]}</b> vardır?</p></div></div>`,
+   answer:cc[w],answerText:String(cc[w]),diagnose:v=>Object.entries(cc).some(([kk,n])=>kk!==w&&n===v)?'ayrit':'genel',
+   explain:`${SOLIDS[k].ad}: <b>${cc.kose}</b> köşe, <b>${cc.ayrit}</b> ayrıt, <b>${cc.yuz}</b> yüz. Kontrol: ${cc.kose} − ${cc.ayrit} + ${cc.yuz} = 2.`,go:'lab-'+k}},
+ acinim(){const K=netKeys(),valid=Math.random()<.5;let cells,key;
+  if(valid){const n=pick(boxNets());cells=n.cells.map(([x,y])=>[x,y]);if(Math.random()<.5)cells=cells.map(([x,y])=>[y,x]);key=netKey(cells)}else{do{cells=randHexomino();key=netKey(cells)}while(K.has(key))}
+  const i=K.get(key);let why;if(valid)why=`Evet! Bu, küpün 11 açınımından biri (Açınım ${i+1}). Atölyede katlayarak görebilirsin.`;
+  else{const xs=cells.map(c=>c[0]),ys=cells.map(c=>c[1]),run=Math.max(...[...new Set(ys)].map(y=>cells.filter(c=>c[1]===y).length),...[...new Set(xs)].map(x=>cells.filter(c=>c[0]===x).length));const blk=cells.some(([x,y])=>[[x+1,y],[x,y+1],[x+1,y+1]].every(([a,b])=>cells.some(c=>c[0]===a&&c[1]===b)));
+   why='Hayır! '+(run>4?`Bir sırada ${run} kare var; katlayınca 4'ten sonraki kare ilk karenin üstüne biner.`:blk?'İçinde 2×2 kare bloğu var; bu dört kare katlanınca aynı köşede üst üste gelir.':'Katlayınca iki kare aynı yüze gelir ve bir yüz açık kalır.')}
+  return {cat:'acinim',kind:'yn',prompt:`<p class="qk">Bu şekil katlanınca bir küp oluşur mu?</p><div class="qnet">${cellsSVG(cells)}</div>`,answer:valid?'e':'h',answerText:valid?'Evet, küp olur':'Hayır, küp olmaz',tagWrong:'acinim',explain:why,go:valid?'acinim-kup':null,netIdx:valid?i:null}},
+ eslestir(){const k=pick(['kup','dprizma','uprizma','aprizma','kpiramit','dpiramit','silindir','koni']);const pool=['kup','dprizma','uprizma','aprizma','kpiramit','dpiramit','silindir','koni'].filter(x=>!(k==='kup'&&x==='kprizma'));
+  return {cat:'eslestir',kind:'choice',grid:true,prompt:`<p class="qk">Bu açınım hangi cismin açınımıdır?</p><div class="qnet">${netArt(k)}</div>`,options:solidOpts(k,pool,'eslesme'),answer:k,answerText:SOLIDS[k].ad,
+   explain:{kup:'Altı eş kare → küp.',dprizma:'Üç çift eş dikdörtgen → dikdörtgenler prizması.',uprizma:'İki eş üçgen taban ve üç dikdörtgen → üçgen dik prizma.',aprizma:'İki eş altıgen taban ve altı dikdörtgen → altıgen dik prizma.',kpiramit:'Bir kare taban ve dört eş üçgen → kare dik piramit.',dpiramit:'Bir dikdörtgen taban ve dört üçgen → dikdörtgen dik piramit.',silindir:'İki eş daire ve bir dikdörtgen → silindir. Dikdörtgenin bir kenarı taban çevresine eşittir.',koni:'Bir daire ve bir daire dilimi → koni.'}[k],go:'acinim-'+k}},
+ gorunum(){let h,V,dir,opts;const AD={on:'ÖNDEN',sag:'SAĞDAN',ust:'ÜSTTEN'};
+  const hidden=h=>{for(let z=0;z<GN-1;z++)for(let x=0;x<GN-1;x++)if(h[z][x]&&h[z+1][x+1]>h[z][x])return true;return false};
+  for(let tries=0;tries<60;tries++){h=randStruct();if(hidden(h))continue;V=views(h);dir=pick(['on','sag','ust']);const vert=dir!=='ust';
+   const cand=(vert?['arka','sol','on','sag']:['alt']).filter(x=>x!==dir).map(x=>V[x]);cand.push(V[dir].map(r=>[...r].reverse()));
+   for(let i=0;i<40;i++){const h2=h.map(r=>[...r]),z=rnd(0,GN-1),x=rnd(0,GN-1);h2[z][x]=Math.max(0,Math.min(GH-1,h2[z][x]+(Math.random()<.5?-1:1)));if(h2.flat().some(Boolean))cand.push(views(h2)[dir])}
+   const seen=new Set([JSON.stringify(V[dir])]),o=[{m:V[dir],x:dir}];for(const m of shuffle(cand)){const s=JSON.stringify(m);if(!seen.has(s)&&o.length<4){seen.add(s);o.push({m,x:'d'+o.length})}}
+   if(o.length===4){opts=o;break}}
+  if(!opts)return GEN.avci();
+  return {cat:'gorunum',kind:'choice',grid:true,prompt:`<p class="qk">Yapının <b>${AD[dir]}</b> görünümü hangisidir?</p><div class="qiso">${isoSVG(h)}</div>`,
+   options:shuffle(opts).map(o=>({label:viewSVG(o.m,dir!=='ust'),val:o.x,tag:'gorunum'})),answer:dir,answerText:'Doğru görünüm yeşille işaretlendi',
+   explain:`${AD[dir].toLowerCase()} bakınca her sütunun ${dir==='ust'?'kapladığı kareyi':'en yüksek küpünü'} görürsün. ${dir==='sag'?'Sağdan bakarken yapının önü senin sol tarafında kalır.':dir==='ust'?'Üstten bakınca yükseklik görünmez; yalnızca hangi karelerin dolu olduğu görülür.':'Önden bakarken yapının sağı senin de sağındadır.'}`,go:'gorunum',struct:h}},
+ hesap(){const t=pick(['hacim','alan','kup','silindir','birim','katman']);
+  if(t==='hacim'||t==='alan'){const a=rnd(2,9),b=rnd(2,8),c=rnd(2,7),V=a*b*c,A=2*(a*b+a*c+b*c);const isV=t==='hacim';
+   return {cat:'hesap',kind:'keypad',max:4,prompt:`<div class="qrow"><div class="qart">${icon('dprizma')}</div><div><p class="qk">${isV?'Hacmi':'Yüzey alanı'} kaç ${isV?'cm³':'cm²'}?</p><p>Boyutları <b>${a} cm</b>, <b>${b} cm</b> ve <b>${c} cm</b> olan dikdörtgenler prizmasının ${isV?'hacmi':'yüzey alanı'} kaç ${isV?'cm³':'cm²'}tür?</p></div></div>`,
+    answer:isV?V:A,answerText:`${isV?V:A} ${isV?'cm³':'cm²'}`,diagnose:v=>v===(isV?A:V)||v===a*b+a*c+b*c?'hacimAlan':'genel',
+    explain:isV?`Hacim = taban alanı × yükseklik = ${a} × ${b} × ${c} = <b>${V} cm³</b>`:`Yüzey alanı = 2 × (${a}·${b} + ${a}·${c} + ${b}·${c}) = 2 × ${a*b+a*c+b*c} = <b>${A} cm²</b>`,go:'lab-dprizma'}}
+  if(t==='kup'){const a=rnd(2,9);return {cat:'hesap',kind:'keypad',max:4,prompt:`<div class="qrow"><div class="qart">${icon('kup')}</div><div><p class="qk">Yüzey alanı kaç cm²?</p><p>Bir ayrıtı <b>${a} cm</b> olan küpün yüzey alanı kaç cm²dir?</p></div></div>`,answer:6*a*a,answerText:6*a*a+' cm²',diagnose:v=>v===a**3?'hacimAlan':v===a*a?'hacimAlan':'genel',explain:`Küpün 6 eş kare yüzü var: 6 × ${a} × ${a} = <b>${6*a*a} cm²</b>`,go:'acinim-kup'}}
+  if(t==='silindir'){const r=rnd(1,5),h=rnd(2,10),V=3*r*r*h;return {cat:'hesap',kind:'keypad',max:4,prompt:`<div class="qrow"><div class="qart">${icon('silindir')}</div><div><p class="qk">Hacmi kaç cm³? <span class="pis">π ≈ 3</span></p><p>Yarıçapı <b>${r} cm</b>, yüksekliği <b>${h} cm</b> olan silindirin hacmi kaç cm³tür?</p></div></div>`,answer:V,answerText:V+' cm³',diagnose:v=>v===2*3*r*h||v===3*2*r*h?'piCarp':'genel',explain:`Hacim = taban alanı × yükseklik = π·r²·h = 3 × ${r*r} × ${h} = <b>${V} cm³</b>`,go:'lab-silindir'}}
+  if(t==='birim'){const L=rnd(2,9),v=pick([['L','cm³',1000],['L','mL',1000],['dm³','cm³',1000]]);return {cat:'hesap',kind:'keypad',max:5,prompt:`<p class="qk">Birim dönüştür</p><p class="big">${L} ${v[0]} = <b>?</b> ${v[1]}</p>`,answer:L*v[2],answerText:`${L*v[2]} ${v[1]}`,diagnose:v2=>v2===L*100||v2===L*10?'birim':'genel',explain:`1 ${v[0]} = 1000 ${v[1]} olduğundan ${L} × 1000 = <b>${L*1000} ${v[1]}</b>`,go:'lab-kup'}}
+  const a=rnd(2,6),b=rnd(2,5),c=rnd(2,6);return {cat:'hesap',kind:'keypad',max:4,prompt:`<p class="qk">Birim küpleri say</p><p>Tabanında <b>${a} × ${b}</b> birim küp olan bir prizma, <b>${c} katman</b> birim küpten oluşuyor. Prizmada toplam kaç birim küp vardır?</p>`,answer:a*b*c,answerText:a*b*c+' birim küp',diagnose:v=>v===a*b+c||v===a+b+c?'hacimAlan':'genel',explain:`Bir katman = ${a} × ${b} = ${a*b} küp. ${c} katman → ${a*b} × ${c} = <b>${a*b*c}</b> birim küp. Hacim = taban alanı × yükseklik.`,go:'lab-dprizma'}}};
+
+/* ---------- soru görüntüleme ---------- */
+let gKey=null;
+function gRender(q,host,onAns,onNext){host.innerHTML='';gKey=null;host.append(el('div','qprompt',q.prompt));const area=el('div','qarea');host.append(area);const fb=el('div','fb hidden');host.append(fb);let done=false;
+ const finish=(ok,tag,user)=>{if(done)return;done=true;gKey=null;area.classList.add('locked');onAns&&onAns(ok,ok?null:tag);sfx(ok?'chime':'flat');
+  fb.className='fb '+(ok?'ok':'bad');const T=!ok&&tag&&GTAG[tag];
+  fb.innerHTML=`<div class="fbh">${ok?pick(PRAISE):user==='⏰'?'⏰ Süre doldu!':'Bu sefer olmadı, birlikte bakalım'}</div>`+(ok?'':`${user&&user!=='⏰'?`<div>Senin cevabın: <b>${user}</b></div>`:''}<div>Doğru cevap: <b>${q.answerText}</b></div>`)+
+   (T?`<div class="tip2">💡 <b>${T.ad}:</b> ${T.ip}</div>`:'')+`<div class="exp">${q.explain||''}</div>`;
+  const row=el('div','frow2');if(q.go&&!ok){const g=el('button','btn2','🔬 Atölyede incele');g.onclick=()=>{sfx('ui');stopT();if(q.netIdx!=null){NET.k='kup';NET.d=defaults('kup');NET.ni=q.netIdx}if(q.struct){GV.h=q.struct.map(r=>[...r]);GV.task=null;gvBuild(true);gvPanel()}go(q.go)};row.append(g)}
+  const nb=el('button','btn2 pri','Devam ▶');nb.onclick=()=>onNext&&onNext();row.append(nb);fb.append(row);setTimeout(()=>{fb.scrollIntoView({behavior:'smooth',block:'nearest'});nb.focus({preventScroll:true})},60)};
+ const ctl={timeout(){finish(false,null,'⏰')},get done(){return done}};
+ if(q.kind==='choice'){const g=el('div','opts2'+(q.grid?' grid':''));q.options.forEach(o=>{const b=el('button','opt2',o.label);b.onclick=()=>{if(done)return;const ok=o.val===q.answer;b.classList.add(ok?'right':'wrong');if(!ok)[...g.children].forEach((c,i)=>{if(q.options[i].val===q.answer)c.classList.add('right')});finish(ok,o.tag||'genel',ok?null:b.textContent.trim()||'(görsel)')};g.append(b)});area.append(g)}
+ else if(q.kind==='yn'){const g=el('div','opts2 yn');[['e','✔ Evet, küp olur'],['h','✖ Hayır, olmaz']].forEach(([v,l])=>{const b=el('button','opt2',l);b.onclick=()=>{if(done)return;const ok=v===q.answer;b.classList.add(ok?'right':'wrong');finish(ok,q.tagWrong,l)};g.append(b)});area.append(g)}
+ else{let v='';const w=el('div','kwrap'),d=el('div','kdisp'),gr=el('div','kgrid');const up=()=>d.innerHTML=v||'<span class="ph">Cevabını yaz</span>';
+  const press=k=>{if(done)return;if(/^\d$/.test(k)){if(v.length<(q.max||5))v+=k;sfx('tick')}else if(k==='del')v=v.slice(0,-1);else if(k==='ok'){if(v){const n=+v;finish(n===q.answer,q.diagnose?q.diagnose(n):'genel',v)}return}up()};
+  ['1','2','3','4','5','6','7','8','9','del','0','ok'].forEach(k=>{const b=el('button','key2'+(k==='ok'?' ok':k==='del'?' del':''),k==='del'?'⌫':k==='ok'?'✔':k);b.onclick=()=>press(k);gr.append(b)});up();w.append(d,gr);area.append(w);gKey=press}
+ return ctl}
+document.addEventListener('keydown',e=>{if(!gKey||e.target.matches('input,select'))return;if(/^\d$/.test(e.key))gKey(e.key);else if(e.key==='Backspace')gKey('del');else if(e.key==='Enter')gKey('ok');else return;e.preventDefault()});
+
+/* ---------- konfeti ---------- */
+function confetti(){let c=$('#fx');if(!c){c=el('canvas');c.id='fx';document.body.append(c)}const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#F9735B','#FBBF24','#0D9488','#22D3EE','#4F46E5','#EC4899'];
+ const P=Array.from({length:150},()=>({x:innerWidth/2+(Math.random()-.5)*240,y:innerHeight*.35,vx:(Math.random()-.5)*15,vy:-Math.random()*14-4,r:Math.random()*7+4,c:pick(cols),a:Math.random()*6}));let t=0;
+ (function f(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.36;p.a+=.2;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});if(++t<120)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* ---------- oyun merkezi ---------- */
+const GM={cats:new Set(Object.keys(GCAT)),M:null,C:null,tmr:null,tc:2};
+const TCOL=['#0D9488','#F9735B','#4F46E5','#EAB308'],TDEF=['🔷 Kristaller','🔶 Piramitler','🟣 Küreler','🟡 Prizmalar'];
+function gHub(){stopT();const W=$('#gwrap');ST.games=ST.games||{};const best=ST.games;
+ W.innerHTML=`<div class="ghero"><div><span class="kick">Oyun merkezi</span><h2>Cisim Oyunları</h2><p>Kategorileri seç, sonra tek başına bir göreve çık ya da arkadaşlarınla takım takım yarış. Yanlış cevapta ipucu alır, aynı türden bir telafi sorusuyla eksiğini kapatırsın.</p></div><div class="gstat"><b>${best.stars||0}</b><span>toplam yıldız</span></div></div>
+ <div class="gsec"><h3>1. Oyun türlerini seç</h3><div class="gcats" id="gCats"></div></div>
+ <div class="gsec"><h3>2. Oyun modunu seç</h3><div class="gmodes">
+  <button class="gmode" id="gSolo"><span class="gic">🎯</span><b>Bireysel Görev</b><span>10 soru • ipucu ve telafi • yıldız kazan</span></button>
+  <button class="gmode" id="gTeam"><span class="gic">🏆</span><b>Takım Yarışması</b><span>2–4 takım • sırayla soru • süre ve hız bonusu</span></button>
+  <button class="gmode" id="gDuel"><span class="gic">⚔️</span><b>İki Kişilik Düello</b><span>Aynı ekranda iki oyuncu • 5'er soru</span></button>
+ </div></div>`;
+ const cw=$('#gCats');Object.entries(GCAT).forEach(([k,c])=>{const b=el('button','gcat'+(GM.cats.has(k)?' on':''),`<span class="gic">${c.ic}</span><b>${c.ad}</b><small>${c.d}</small>${best[k]!=null?`<em>En iyi: %${best[k]}</em>`:''}`);
+  b.onclick=()=>{sfx('ui');if(GM.cats.has(k)){if(GM.cats.size>1)GM.cats.delete(k)}else GM.cats.add(k);b.classList.toggle('on',GM.cats.has(k))};cw.append(b)});
+ $('#gSolo').onclick=()=>{sfx('ui');startSolo()};$('#gTeam').onclick=()=>{sfx('ui');teamSetup(3)};$('#gDuel').onclick=()=>{sfx('ui');teamSetup(2,true)}}
+function catQueue(n){const C=[...GM.cats],q=[];for(let i=0;i<n;i++)q.push(C[i%C.length]);return shuffle(q).map(c=>({c}))}
+function startSolo(){GM.M={q:catQueue(10),i:0,ok:0,ans:0,tags:{},extra:0,per:{}};soloNext()}
+function soloNext(){const M=GM.M,W=$('#gwrap');if(M.i>=M.q.length)return soloEnd();const it=M.q[M.i],q=GEN[it.c]();
+ W.innerHTML=`<div class="gcard"><div class="ghud"><button class="btn2" id="gBack">✖ Çık</button><div class="gprog"><span>${GCAT[it.c].ic} ${GCAT[it.c].ad}${it.t?' • <b class="tel">🔁 Telafi sorusu</b>':''}</span><div class="bar"><i style="width:${M.i/M.q.length*100}%"></i></div><small>Soru ${M.i+1} / ${M.q.length}</small></div><div class="gsc">✔ ${M.ok}</div></div><div id="gq"></div></div>`;
+ $('#gBack').onclick=()=>{sfx('ui');gHub()};
+ gRender(q,$('#gq'),(ok,tag)=>{M.ans++;const p=M.per[it.c]||(M.per[it.c]={o:0,t:0});p.t++;if(ok){M.ok++;p.o++}else{const t=tag||'genel';M.tags[t]=(M.tags[t]||0)+1;if(M.extra<3){M.q.push({c:it.c,t:1});M.extra++}}},()=>{M.i++;soloNext();window.scrollTo({top:0,behavior:'smooth'})})}
+function soloEnd(){const M=GM.M,acc=M.ans?M.ok/M.ans:0,st=acc>=.9?3:acc>=.7?2:acc>=.5?1:0;ST.games=ST.games||{};ST.games.stars=(ST.games.stars||0)+st;
+ Object.entries(M.per).forEach(([k,p])=>{const pc=Math.round(p.o/p.t*100);ST.games[k]=Math.max(ST.games[k]||0,pc)});save();
+ const tags=Object.entries(M.tags).sort((a,b)=>b[1]-a[1]);
+ $('#gwrap').innerHTML=`<div class="gcard gend"><div class="bigstar">${[0,1,2].map(i=>`<span class="${i<st?'':'off'}">★</span>`).join('')}</div><h2>${st>=2?'Görev başarıyla tamamlandı!':'Görev tamamlandı, bir tur daha?'}</h2><p>${M.ans} sorudan <b>${M.ok}</b> tanesini doğru yaptın (%${Math.round(acc*100)}).</p>
+  <div class="gper">${Object.entries(M.per).map(([k,p])=>`<div><span>${GCAT[k].ic} ${GCAT[k].ad}</span><div class="bar"><i style="width:${p.o/p.t*100}%;background:${p.o/p.t>=.8?'#16A34A':p.o/p.t>=.5?'#F59E0B':'#DC2626'}"></i></div><b>${p.o}/${p.t}</b></div>`).join('')}</div>
+  ${tags.length?`<div class="gtags"><h3>Dikkat etmen gerekenler</h3>${tags.map(([t,n])=>`<div class="tip2"><b>${GTAG[t].ad}</b> (${n} kez)<br>${GTAG[t].ip}${GTAG[t].go?`<br><button class="btn2" data-go="${GTAG[t].go}">🔬 Atölyede çalış</button>`:''}</div>`).join('')}</div>`:''}
+  <div class="frow2 c"><button class="btn2 pri" id="gAgain">↻ Yeni görev</button><button class="btn2" id="gHome">🎮 Oyun merkezi</button></div></div>`;
+ $$('#gwrap [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));$('#gAgain').onclick=()=>{sfx('ui');startSolo()};$('#gHome').onclick=()=>{sfx('ui');gHub()};if(st>=2){confetti();sfx('chime')}}
+function teamSetup(n,duel){GM.tc=n;const W=$('#gwrap');W.innerHTML=`<div class="gcard"><div class="ghud"><button class="btn2" id="gBack">← Geri</button><h2 style="flex:1">${duel?'⚔️ İki Kişilik Düello':'🏆 Takım Yarışması'}</h2></div>
+ ${duel?'':`<div class="setrow"><span>Takım sayısı:</span><div class="seg2" id="tcSeg">${[2,3,4].map(k=>`<button data-n="${k}" class="${k===n?'on':''}">${k}</button>`).join('')}</div></div>`}
+ <div class="teams" id="tNames"></div>
+ <div class="setrow"><span>Her ${duel?'oyuncuya':'takıma'} soru:</span><select id="tR"><option>3</option><option selected>5</option><option>8</option></select>
+  <span>Süre:</span><select id="tT"><option value="0">Süresiz</option><option value="30">30 sn</option><option value="45" selected>45 sn</option><option value="60">60 sn</option></select></div>
+ <p class="note">Seçili oyun türleri: ${[...GM.cats].map(k=>GCAT[k].ic+' '+GCAT[k].ad).join(', ')}</p>
+ <button class="btn2 pri big" id="tGo">🚀 Başlat</button></div>`;
+ const draw=()=>{const old=$$('#tNames input').map(i=>i.value);$('#tNames').innerHTML='';for(let i=0;i<GM.tc;i++){const r=el('label','tname',`<i style="background:${TCOL[i]}"></i>`),inp=el('input');inp.value=old[i]||(duel?['Oyuncu 1','Oyuncu 2'][i]:TDEF[i]);inp.maxLength=20;inp.setAttribute('aria-label',(i+1)+'. ad');r.append(inp);$('#tNames').append(r)}};draw();
+ $$('#tcSeg button').forEach(b=>b.onclick=()=>{GM.tc=+b.dataset.n;$$('#tcSeg button').forEach(x=>x.classList.toggle('on',x===b));draw()});
+ $('#gBack').onclick=()=>{sfx('ui');gHub()};
+ $('#tGo').onclick=()=>{sfx('ui');GM.C={teams:$$('#tNames input').map((x,i)=>({n:x.value.trim()||TDEF[i],s:0,c:TCOL[i]})),turn:0,round:0,rounds:+$('#tR').value,time:+$('#tT').value,duel};teamNext()}}
+function stopT(){if(GM.tmr){clearInterval(GM.tmr);GM.tmr=null}}
+function teamNext(){stopT();const C=GM.C;if(C.round>=C.rounds)return teamEnd();const T=C.teams[C.turn],cat=pick([...GM.cats]),q=GEN[cat]();
+ $('#gwrap').innerHTML=`<div class="gcard"><div class="board">${C.teams.map((t,i)=>`<div class="team ${i===C.turn?'on':''}" style="--c:${t.c}"><span>${t.n}</span><b>${t.s}</b></div>`).join('')}</div>
+  <div class="turn">Sıra: <b style="color:${T.c}">${T.n}</b> • Tur ${C.round+1}/${C.rounds} • ${GCAT[cat].ic} ${GCAT[cat].ad}</div>${C.time?'<div class="tbar"><i id="tBar"></i></div>':''}<div id="gq"></div><div class="frow2 r"><button class="btn2" id="tStop">⏹ Bitir</button></div></div>`;
+ $('#tStop').onclick=()=>{sfx('ui');teamEnd()};const t0=performance.now();
+ const ctl=gRender(q,$('#gq'),ok=>{stopT();if(ok){const used=(performance.now()-t0)/1000,bonus=C.time?Math.max(0,Math.round(5*(1-used/C.time))):0;T.s+=10+bonus;const e=$$('.team')[C.turn];if(e){e.querySelector('b').textContent=T.s;e.classList.add('bump')}}},()=>{C.turn++;if(C.turn>=C.teams.length){C.turn=0;C.round++}teamNext()});
+ if(C.time)GM.tmr=setInterval(()=>{const l=1-(performance.now()-t0)/1000/C.time,b=$('#tBar');if(b)b.style.width=Math.max(0,l*100)+'%';if(l<=0){stopT();if(!ctl.done)ctl.timeout()}},150)}
+function teamEnd(){stopT();const C=GM.C,r=[...C.teams].sort((a,b)=>b.s-a.s),md=['🥇','🥈','🥉','🏅'];const tie=r.length>1&&r[0].s===r[1].s;
+ $('#gwrap').innerHTML=`<div class="gcard gend"><h2>🏁 ${tie?'Berabere!':r[0].n+' kazandı!'}</h2><div class="podium">${r.map((t,i)=>`<div class="pod" style="--c:${t.c}"><em>${md[i]}</em><span>${t.n}</span><b>${t.s} puan</b></div>`).join('')}</div>
+  <div class="frow2 c"><button class="btn2 pri" id="tAg">↻ Aynı ayarlarla yeniden</button><button class="btn2" id="tHome">🎮 Oyun merkezi</button></div></div>`;
+ $('#tAg').onclick=()=>{sfx('ui');C.teams.forEach(t=>t.s=0);C.turn=0;C.round=0;teamNext()};$('#tHome').onclick=()=>{sfx('ui');gHub()};confetti();sfx('chime')}
+
 /* ============ GENEL ============ */
 function setLevel(l){ST.level=l;save();$$('#lvSeg [data-l]').forEach(b=>b.classList.toggle('on',+b.dataset.l===l));route()}
 function go(h){if(location.hash!=='#'+h)location.hash=h;else route()}
@@ -433,9 +619,9 @@ let CUR='';
 function route(){const h=(location.hash||'#lab').slice(1),[v,k]=h.split('-');const view=v==='acinim'?'net':v==='gorunum'?'gv':v==='oyun'?'games':'lab';
  $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===view));['lab','net','gv','games'].forEach(x=>$('#v-'+x).classList.toggle('hidden',x!==view));
  lv3.active=view==='lab';nv3.active=view==='net';GV.v3.active=view==='gv';
- if(view==='lab')labOpen(k||LAB.k);else if(view==='net')netOpen(k||NET.k);CUR=view;requestAnimationFrame(()=>{lv3.resize();nv3.resize();GV.v3.resize()})}
+ if(view!=='games')stopT();if(view==='lab')labOpen(k||LAB.k);else if(view==='net')netOpen(k||NET.k);else if(view==='games'&&!$('#gwrap').childElementCount)gHub();CUR=view;requestAnimationFrame(()=>{lv3.resize();nv3.resize();GV.v3.resize()})}
 function init(){labInit();netInit();gvInit();
- $$('.tab').forEach(t=>t.onclick=()=>{if(t.disabled)return;sfx('ui');go(t.dataset.v==='lab'?'lab-'+LAB.k:t.dataset.v==='net'?'acinim-'+NET.k:t.dataset.v==='gv'?'gorunum':'oyun')});
+ $$('.tab').forEach(t=>t.onclick=()=>{if(t.disabled)return;sfx('ui');if(t.dataset.v==='games'&&CUR==='games'){gHub();return}go(t.dataset.v==='lab'?'lab-'+LAB.k:t.dataset.v==='net'?'acinim-'+NET.k:t.dataset.v==='gv'?'gorunum':'oyun')});
  
  const piB=$('#piBtn'),pu=()=>piB.textContent='π ≈ '+PIS();pu();piB.onclick=()=>{sfx('ui');ST.pi=ST.pi===3?3.14:3;save();pu();route()};
  const sB=$('#sndBtn'),su=()=>sB.textContent=ST.snd?'🔊 Ses açık':'🔇 Ses kapalı';su();sB.onclick=()=>{ST.snd=!ST.snd;save();su();sfx('ui')};
@@ -446,4 +632,4 @@ function init(){labInit();netInit();gvInit();
  addEventListener('hashchange',route);route()}
 try{init()}catch(e){document.body.insertAdjacentHTML('afterbegin',`<div style="background:#FEE2E2;padding:12px;font-weight:700">Hata: ${e.message}</div>`);console.error(e)}
 window.__trees=S=>(S.meta.type==='prism'?prismTrees(S.meta.n):pyrTrees(S.meta.n)).map(x=>x.tree);
-window.__CA={GV,views,gvBuild,gvPanel,ST,LAB,NET,boxNets,setT,go,netPlan,netMatrices,SOLIDS,prismPoly,rect,measures};
+window.__CA={GEN,GM,netKeys,netKey,gHub,startSolo,GV,views,gvBuild,gvPanel,ST,LAB,NET,boxNets,setT,go,netPlan,netMatrices,SOLIDS,prismPoly,rect,measures};
