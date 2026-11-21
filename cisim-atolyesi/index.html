@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cisim Atölyesi 3D • Geometrik Cisimler</title>
+<meta name="description" content="Prizma, piramit, silindir, koni ve kürenin 3D etkileşimli laboratuvarı ve katlanır açınımları.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cpath d=%22M32 12 L52 23 L32 34 L12 23 Z%22 fill=%22%235EEAD4%22/%3E%3Cpath d=%22M32 34 L52 23 L52 45 L32 56 Z%22 fill=%22%230D9488%22/%3E%3Cpath d=%22M12 23 L32 34 L32 56 L12 45 Z%22 fill=%22%23F9735B%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"./lib/three.module.min.js"}}</script>
+<style>
+:root{--ink:#0F172A;--ink2:#334155;--muted:#64748B;--line:#E2E8F0;--card:#FFFFFF;--teal:#0D9488;--teal-d:#0F766E;--teal-l:#CCFBF1;--cyan:#22D3EE;--coral:#F9735B;--amber:#FBBF24;--indigo:#4F46E5;--night:#0A1733;--glass:rgba(13,30,66,.62);--glassb:rgba(125,211,252,.22);--r:20px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:clamp(14px,.45vw + 9.5px,19px)}
+body{font-family:'Lexend','Segoe UI',system-ui,sans-serif;color:var(--ink);background:#071229;min-height:100vh;overflow-x:hidden}
+#bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.hidden{display:none!important}
+/* üst bant */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px 8px;color:#fff}
+.brand{display:flex;align-items:center;gap:14px;flex:1;min-width:250px}
+.logo{width:54px;height:54px;flex:none;filter:drop-shadow(0 6px 18px rgba(34,211,238,.35))}
+.brand h1{font-size:1.55rem;font-weight:800;letter-spacing:-.4px;line-height:1.05}
+.brand h1 em{font-style:normal;background:linear-gradient(90deg,var(--amber),var(--coral));-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{font-size:.78rem;color:#93C5FD;font-weight:500;letter-spacing:.6px;text-transform:uppercase;margin-top:3px}
+.tbtn{border:1.5px solid var(--glassb);background:rgba(255,255,255,.06);color:#E0F2FE;font-weight:600;font-size:.84rem;border-radius:12px;padding:8px 13px;min-height:44px;backdrop-filter:blur(6px);transition:background .15s}
+.tbtn:hover{background:rgba(255,255,255,.14)}
+/* sekmeler */
+.tabs{display:flex;gap:8px;padding:6px 20px 12px;flex-wrap:wrap}
+.tab{border:1.5px solid var(--glassb);background:rgba(255,255,255,.05);color:#E0F2FE;font-weight:700;font-size:.98rem;padding:10px 18px;border-radius:14px;min-height:50px;display:inline-flex;gap:8px;align-items:center;backdrop-filter:blur(6px);transition:all .15s}
+.tab:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.tab.on{background:#fff;color:var(--ink);border-color:#fff;box-shadow:0 10px 30px rgba(34,211,238,.25)}
+.tab:disabled{opacity:.5;cursor:not-allowed}
+.tab small{font-size:.66rem;background:var(--amber);color:#422006;border-radius:99px;padding:2px 8px;font-weight:800}
+/* çalışma alanı */
+.ws{display:grid;grid-template-columns:200px minmax(0,1fr) 360px;gap:14px;padding:0 20px 20px;height:calc(100vh - 150px);min-height:560px}
+.solids{background:var(--glass);border:1.5px solid var(--glassb);border-radius:var(--r);padding:10px;overflow:auto;backdrop-filter:blur(10px);scrollbar-width:thin;scrollbar-color:rgba(125,211,252,.3) transparent}
+.sgrp{font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#7DD3FC;margin:12px 6px 6px;display:flex;align-items:center;gap:6px}
+.sgrp::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(125,211,252,.4),transparent)}
+.sitem{display:flex;align-items:center;gap:10px;width:100%;border:1.5px solid transparent;background:transparent;border-radius:14px;padding:6px;text-align:left;color:#E0F2FE;margin-bottom:4px;min-height:58px;transition:all .15s}
+.sic{width:52px;height:44px;flex:none;background:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -3px 0 rgba(15,23,42,.08)}
+.sic svg{width:44px;height:36px}
+.sitem b{font-weight:600;font-size:.86rem;line-height:1.25}
+.sitem:hover{background:rgba(255,255,255,.08)}
+.sitem.on{background:#fff;color:var(--ink);border-color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.sitem.on .sic{background:linear-gradient(135deg,#CCFBF1,#E0F2FE)}
+.lv{display:none}
+/* sahne */
+.stage{position:relative;background:radial-gradient(ellipse at 50% 30%,#FFFFFF 0%,#F1F5FA 45%,#DCE6F2 100%);border-radius:var(--r);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.45),inset 0 0 0 1.5px rgba(255,255,255,.7);min-height:360px}
+.stage::before,.stage::after{content:'';position:absolute;width:26px;height:26px;border:2px solid rgba(13,148,136,.45);z-index:2;pointer-events:none}
+.stage::before{right:12px;bottom:12px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.stage::after{right:12px;top:12px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.vp{position:absolute;inset:0;touch-action:none}
+.vp canvas{display:block;touch-action:none}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;font-size:.8rem;font-weight:700;white-space:nowrap;padding:3px 9px;border-radius:9px;background:rgba(255,255,255,.92);border:1.5px solid var(--line);color:var(--ink);will-change:transform;box-shadow:0 3px 10px rgba(15,23,42,.08)}
+.vlb{background:var(--ink);color:#fff;border:0;font-size:.84rem;padding:2px 8px;border-radius:7px}
+.dlb{border-color:#7DD3FC;color:#0369A1}.hlb{border-color:#FDA4AF;color:#BE123C}.plb{border-color:#FDBA74;color:#C2410C}.klb{border-color:#A5B4FC;color:#3730A3}.clb{border-color:#F9A8D4;color:#9D174D}
+.flb{background:rgba(15,23,42,.8);color:#fff;border:0}.mlb{background:#FEF3C7;border-color:#FCD34D;font-size:.72rem;transform:translateY(16px)}
+.instag{position:absolute;font-size:.7rem;font-weight:800;color:#0F766E;background:#F0FDFA;border:1px solid #99F6E4;border-radius:6px;padding:1px 7px;pointer-events:none;z-index:2}
+.tools{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:3;max-width:calc(100% - 60px)}
+.chipb{border:1.5px solid rgba(15,23,42,.08);background:rgba(255,255,255,.9);color:var(--ink);font-weight:600;font-size:.82rem;border-radius:12px;padding:8px 13px;min-height:42px;backdrop-filter:blur(6px);box-shadow:0 4px 14px rgba(15,23,42,.08);transition:all .15s}
+.chipb:hover{border-color:var(--teal);transform:translateY(-1px)}
+.chipb.on{background:var(--ink);color:#fff}
+.chipb.pri{background:linear-gradient(135deg,var(--teal),#0891B2);color:#fff;border-color:transparent}
+.tipbox{position:absolute;left:12px;bottom:12px;max-width:min(560px,calc(100% - 24px));background:rgba(10,23,51,.9);color:#fff;border-radius:14px;padding:10px 14px 10px 40px;font-size:.87rem;line-height:1.45;z-index:3;backdrop-filter:blur(6px)}
+.tipbox::before{content:'💡';position:absolute;left:12px;top:9px}
+.tipbox.pop{animation:pop .3s ease}
+@keyframes pop{from{transform:translateY(6px);opacity:.3}}
+.fillinfo{position:absolute;left:12px;bottom:92px;background:#fff;border:1.5px solid #BFDBFE;border-radius:12px;padding:8px 12px;font-size:.85rem;z-index:3;max-width:70%;box-shadow:0 6px 18px rgba(15,23,42,.1)}
+/* panel */
+.panel{overflow:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:6px;scrollbar-width:thin;scrollbar-color:rgba(125,211,252,.3) transparent}
+.panel>*{flex:none}
+.pcard{background:var(--card);border-radius:var(--r);padding:14px 16px;box-shadow:0 14px 40px rgba(0,0,0,.28);position:relative;overflow:hidden}
+.pcard h3{font-size:.78rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal-d);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pcard:first-child{background:linear-gradient(135deg,#FFFFFF 55%,#ECFEFF)}
+.pcard:first-child::after{content:'';position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;border:16px solid rgba(34,211,238,.10)}
+.ph{display:flex;gap:12px;align-items:center}
+.pic{background:#F0FDFA;border-radius:14px;padding:4px}
+.pic svg{width:60px;height:48px}
+.ph h2{font-size:1.2rem;font-weight:800;line-height:1.15}
+.def{font-size:.86rem;color:var(--ink2);line-height:1.55;margin-top:10px}
+.slider{display:block;margin-bottom:10px}
+.slider span{display:flex;justify-content:space-between;font-size:.86rem;font-weight:600;margin-bottom:4px}
+.slider b{color:#fff;background:var(--teal);border-radius:8px;padding:1px 9px;font-size:.82rem}
+input[type=range]{width:100%;height:32px;accent-color:var(--teal);cursor:pointer}
+.tgl{display:flex;flex-wrap:wrap;gap:6px}
+.tg{border:1.5px solid var(--line);background:#fff;color:var(--ink2);font-weight:600;font-size:.8rem;border-radius:11px;padding:8px 11px;min-height:40px;transition:all .12s}
+.tg::before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;border:2px solid #CBD5E1;margin-right:6px;vertical-align:-1px}
+.tg.on{background:#F0FDFA;border-color:var(--teal);color:var(--teal-d)}
+.tg.on::before{background:var(--teal);border-color:var(--teal)}
+.cnt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cnt div{background:linear-gradient(180deg,#F8FAFC,#EEF2F7);border-radius:14px;padding:8px;text-align:center;font-size:.76rem;color:var(--muted);font-weight:600}
+.cnt b{display:block;font-size:1.7rem;color:var(--ink);font-weight:800}
+.note{font-size:.82rem;color:var(--ink2);line-height:1.5;margin-top:8px}
+.ul{margin-left:18px;font-size:.88rem;line-height:1.6}
+.pis{font-size:.7rem;font-weight:700;background:#FEF3C7;color:#92400E;border-radius:99px;padding:2px 8px;letter-spacing:0;text-transform:none}
+.mrow{border-top:1px dashed var(--line);padding:9px 0}
+.mrow:first-child{border-top:0;padding-top:0}
+.mh{font-weight:700;font-size:.9rem}
+.mf{font-size:.78rem;color:var(--muted);margin-top:2px;font-style:italic}
+.ms{font-size:.88rem;margin-top:2px}
+.ms b{color:var(--teal-d)}
+.nets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.nets.cube{grid-template-columns:repeat(4,1fr)}
+.nvar{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.68rem;font-weight:700;color:var(--ink2);min-height:44px;transition:all .12s}
+.nvar:hover{border-color:var(--coral)}
+.nvar svg{width:100%;height:46px}
+.nvar.on{border-color:var(--coral);background:#FFF1EE;color:#C2410C}
+.frow{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px dashed var(--line);font-size:.85rem}
+.frow:first-child{border-top:0}
+.frow i{width:14px;height:14px;border-radius:4px}
+.frow span{color:var(--muted);font-size:.78rem}
+.fa{font-weight:700;color:var(--teal-d);text-align:right}
+.ftot{display:flex;justify-content:space-between;gap:10px;align-items:center;background:linear-gradient(135deg,#F0FDFA,#ECFEFF);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:.82rem}
+.ftot b{font-size:1.05rem;color:var(--teal-d);white-space:nowrap}
+/* katlama çubuğu */
+.foldbar{position:absolute;left:12px;right:12px;bottom:12px;z-index:4;display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.96);border-radius:18px;padding:8px 12px;box-shadow:0 14px 34px rgba(15,23,42,.18)}
+.foldbar input{flex:1;accent-color:var(--coral)}
+.playb{width:50px;height:50px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--coral),#F43F5E);color:#fff;font-size:1.2rem;flex:none;box-shadow:0 8px 20px rgba(244,63,94,.35)}
+.pct{font-weight:700;font-size:.84rem;min-width:130px;text-align:center;color:var(--ink2)}
+.fl{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+#v-net .tipbox,#v-gv .tipbox{bottom:88px}
+.mode{display:inline-flex;background:#F1F5F9;border-radius:12px;padding:3px}
+.mode button{border:0;background:transparent;font-weight:700;font-size:.8rem;padding:7px 11px;border-radius:9px;min-height:40px;color:var(--ink2)}
+.mode button.on{background:var(--ink);color:#fff}
+.msg{position:absolute;left:12px;right:12px;bottom:92px;margin:auto;max-width:520px;background:#fff;border:2px solid #C7D2FE;border-radius:16px;padding:14px;z-index:3;font-size:.92rem;line-height:1.5}
+.games{background:var(--glass);border:1.5px solid var(--glassb);color:#E0F2FE;border-radius:var(--r);margin:0 20px 20px;padding:48px 24px;text-align:center;backdrop-filter:blur(10px)}
+.games h2{font-size:1.6rem;font-weight:800;margin-bottom:8px;color:#fff}
+.games p{max-width:620px;margin:0 auto;line-height:1.6}
+.ws.two{grid-template-columns:minmax(0,1fr) 400px}
+.gvbar{right:auto}
+.mode.big button{font-size:.92rem;padding:10px 16px;min-height:46px}
+.mode.big button.on{background:var(--teal)}
+.cnt.two{grid-template-columns:1fr 1fr;margin-top:10px}.cnt small{font-size:.65rem}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vcard{border:1.5px solid var(--line);background:#F8FAFC;border-radius:14px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;font-weight:700;font-size:.8rem;color:var(--ink);transition:all .12s}
+.vcard:hover{border-color:#0EA5E9;transform:translateY(-2px)}
+.vcard.on{border-color:#0EA5E9;background:#F0F9FF;box-shadow:0 0 0 3px rgba(14,165,233,.25)}
+.vcard em{font-style:normal;color:#BE185D;font-size:.75rem}
+.vsvg{width:100%;max-width:92px;height:auto}
+.tviews{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tv{border:2px dashed #FDBA74;border-radius:12px;padding:6px;text-align:center;font-size:.78rem;font-weight:700;background:#FFF7ED}
+.tv.ok{border:2px solid #16A34A;background:#F0FDF4;color:#15803D}
+.tv svg{width:100%;max-width:86px}
+.vsvg.hedef rect[fill="#0EA5E9"]{fill:#F97316;stroke:#C2410C}
+.tdone{background:#DCFCE7;border-radius:12px;padding:10px;margin-top:10px;font-size:.86rem;line-height:1.45}
+@media (max-width:1180px){.ws.two{grid-template-columns:1fr}}
+/* duyarlı */
+@media (max-width:1180px){.ws{grid-template-columns:190px minmax(0,1fr);height:auto}.panel{grid-column:1/-1}.stage{height:70vh}}
+@media (max-width:760px){
+ .ws{grid-template-columns:1fr;padding:0 10px 14px;gap:10px}.tabs{padding:6px 10px 10px}.top{padding:12px 12px 6px}
+ .solids{display:flex;overflow-x:auto;gap:6px;padding:8px}.sgrp{display:none}.sitem{flex:none;width:auto;flex-direction:column;min-width:92px;text-align:center;gap:4px;padding:6px 4px}.sitem b{font-size:.72rem}
+ .stage{height:62vh;min-height:380px}.brand h1{font-size:1.2rem}.logo{width:42px;height:42px}.tbtn{font-size:.74rem;padding:6px 9px;flex:1}
+ .pct{min-width:84px;font-size:.74rem}.fl{display:none}.tab{font-size:.88rem;padding:9px 12px;flex:1;justify-content:center}.lbl{font-size:.7rem}
+ .foldbar{flex-wrap:wrap}.foldbar input{order:3;flex:1 1 100%}#v-net .tipbox{bottom:130px}#v-gv .tipbox{bottom:84px}.mode.big button{font-size:.8rem;padding:8px 10px}.tools{max-width:calc(100% - 24px)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="app">
+<header class="top">
+ <div class="brand">
+  <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5EEAD4"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs><path d="M32 4 L58 18 L58 46 L32 60 L6 46 L6 18 Z" fill="none" stroke="#7DD3FC" stroke-width="1.5" stroke-dasharray="3 3" opacity=".7"/><path d="M32 12 L52 23 L32 34 L12 23 Z" fill="url(#lg1)"/><path d="M32 34 L52 23 L52 45 L32 56 Z" fill="#0D9488"/><path d="M12 23 L32 34 L32 56 L12 45 Z" fill="#F9735B"/><path d="M12 45 L2 51 L12 56" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  <div><h1>Cisim <em>Atölyesi</em> 3D</h1><p>Geometrik cisimler • keşfet • aç • katla</p></div>
+ </div>
+ <button class="tbtn" id="piBtn">π ≈ 3</button>
+ <button class="tbtn" id="sndBtn">🔊 Ses açık</button>
+ <button class="tbtn" id="bgBtn">✨ Animasyon açık</button>
+ <button class="tbtn" id="qBtn">✨ Yüksek kalite</button>
+ <button class="tbtn" id="fsBtn">⛶ Tam ekran</button>
+</header>
+<nav class="tabs">
+ <button class="tab" data-v="lab">🔬 Cisim Laboratuvarı</button>
+ <button class="tab" data-v="net">📦 Açınım Atölyesi</button>
+ <button class="tab" data-v="gv">🧊 Görünüm Atölyesi</button>
+ <button class="tab" data-v="games" disabled>🎮 Oyunlar <small>Yakında</small></button>
+</nav>
+<section id="v-lab" class="ws">
+ <aside class="solids" id="labSolids" aria-label="Cisimler"></aside>
+ <div class="stage">
+  <div class="vp" id="labVp"></div>
+  <div class="tools" id="labCam"><button class="chipb" data-cam="iso">◆ İzometrik</button><button class="chipb" data-cam="on">Önden</button><button class="chipb" data-cam="sag">Sağdan</button><button class="chipb" data-cam="ust">Üstten</button><button class="chipb" id="labIns">▦ Görünüm çizimleri</button><button class="chipb pri" id="labToNet">📦 Açınımına bak</button></div>
+  <div class="tipbox" id="labTip"></div>
+ </div>
+ <aside class="panel" id="labPanel"></aside>
+</section>
+<section id="v-net" class="ws hidden">
+ <aside class="solids" id="netSolids" aria-label="Cisimler"></aside>
+ <div class="stage">
+  <div class="vp" id="netVp"></div>
+  <div class="tools" id="netCam"><button class="chipb" data-cam="iso">◆ İzometrik</button><button class="chipb" data-cam="ust">Üstten</button><button class="chipb" data-cam="on">Önden</button></div>
+  <div class="msg hidden" id="netMsg"><b>Kürenin açınımı yoktur.</b> Bir portakalı soyup kabuğunu masaya düz sermeye çalış: kabuk yırtılmadan ya da ezilmeden düzleşmez. Küre yüzeyi düzleme serilemez; bu yüzden dünya haritalarında hep bir bozulma vardır.</div>
+  <div class="tipbox" id="netTip"></div>
+  <div class="foldbar">
+   <button class="playb" id="netPlay" aria-label="Otomatik katla / aç">▶</button>
+   <span class="fl">Açık</span><input type="range" id="netT" min="0" max="100" value="0" aria-label="Katlama oranı"><span class="fl">Kapalı</span>
+   <span class="pct" id="netPct"></span>
+   <div class="mode" id="netMode"><button data-m="rot" class="on">🔄 Döndür</button><button data-m="fold">✋ Katla</button></div>
+  </div>
+ </div>
+ <aside class="panel" id="netPanel"></aside>
+</section>
+<section id="v-gv" class="ws two hidden">
+ <div class="stage">
+  <div class="vp" id="gvVp"></div>
+  <div class="tools" id="gvCam"><button class="chipb" data-cam="iso">◆ İzometrik</button><button class="chipb" data-cam="on">Önden</button><button class="chipb" data-cam="arka">Arkadan</button><button class="chipb" data-cam="sag">Sağdan</button><button class="chipb" data-cam="sol">Soldan</button><button class="chipb" data-cam="ust">Üstten</button><button class="chipb" data-cam="alt">Alttan</button></div>
+  <div class="tipbox" id="gvTip"><b>Küp ekle:</b> zemindeki bir kareye ya da bir küpe dokun; o sütuna küp eklenir.</div>
+  <div class="foldbar gvbar"><div class="mode big" id="gvMode"><button data-m="add" class="on">➕ Küp ekle</button><button data-m="del">➖ Küp çıkar</button><button data-m="rot">🔄 Döndür</button></div></div>
+ </div>
+ <aside class="panel">
+  <div class="pcard"><div class="ph"><div class="pic"><svg viewBox="0 0 80 64"><path d="M20 30 L34 23 L48 30 L48 46 L34 53 L20 46 Z" fill="#0EA5E9" stroke="#0F172A" stroke-width="2"/><path d="M20 30 L34 37 L48 30 M34 37 V53" fill="none" stroke="#0F172A" stroke-width="2"/><path d="M34 23 L48 16 L62 23 L48 30 Z" fill="#FBBF24" stroke="#0F172A" stroke-width="2"/><path d="M48 30 L62 23 L62 39 L48 46 Z" fill="#9D174D" stroke="#0F172A" stroke-width="2"/></svg></div><div><h2>Görünüm Atölyesi</h2></div></div><p class="def">Eş küplerle yapı kur, yapıya farklı yönlerden bak. Her görünüm, o yönden bakınca görülen karelerdir.</p><div class="cnt two" id="gvCount"></div></div>
+  <div class="pcard"><h3>Farklı yönlerden görünümler <span class="pis">tıkla → kamera döner</span></h3><div class="vgrid" id="gvViews"></div></div>
+  <div class="pcard"><h3>Hazır yapılar</h3><div class="tgl" id="gvPresets"></div><div class="tgl" style="margin-top:8px"><button class="tg" id="gvRnd">🎲 Rastgele yapı</button><button class="tg" id="gvClr">🧹 Temizle</button></div></div>
+  <div class="pcard"><h3>Görev <button class="chipb pri" id="gvTask" style="min-height:38px;padding:6px 12px">🎯 Görünümlerden yapı kur</button></h3><div id="gvTaskBox"></div></div>
+ </aside>
+</section>
+<section id="v-games" class="hidden"><div class="games"><h2>🎮 Oyunlar yakında</h2><p>Cisim Avcısı, Açınım mı Değil mi?, Görünüm Dedektifi, Hacim Tahmini ve Sınıf Yarışması bir sonraki aşamada eklenecek.</p></div></section>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
