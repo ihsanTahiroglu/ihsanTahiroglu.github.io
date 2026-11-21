@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İhsan Tahiroğlu • Dijital Matematik Materyalleri</title>
+<meta name="description" content="Ortaokul matematiği için etkileşimli oyunlar, simülasyonlar ve ders materyalleri.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--pri:#6D28D9;--pri-d:#4C1D95;--pri-l:#EDE9FE;--acc:#F97316;--ink:#1E1B4B;--muted:#55557A;--line:#DDD6FE}
+html{font-size:clamp(15px,.5vw + 10px,20px)}
+body{font-family:'Nunito','Segoe UI',system-ui,sans-serif;font-weight:700;color:var(--ink);min-height:100vh;background:radial-gradient(1100px 600px at 85% -10%,#3B1A7A 0%,transparent 60%),radial-gradient(900px 520px at -10% 110%,#0E3A5C 0%,transparent 60%),#0B1026;background-attachment:fixed;overflow-x:hidden}
+#stars{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:28px 20px 40px}
+header{color:#fff;text-align:center;padding:30px 10px 26px}
+.logo{width:76px;height:76px;margin:0 auto 14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FDE68A,#F97316 55%,#9A3412);box-shadow:0 0 40px rgba(249,115,22,.6);position:relative}
+.logo::after{content:'';position:absolute;left:-14px;right:-14px;top:31px;height:13px;border:3px solid rgba(255,255,255,.85);border-radius:50%;transform:rotate(-18deg)}
+.kick{font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:#FDBA74;font-weight:900}
+h1{font-size:2.5rem;font-weight:900;line-height:1.1;margin:6px 0 10px}
+header p{opacity:.88;max-width:680px;margin:0 auto;line-height:1.5}
+.bar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:22px 0 18px}
+.search{flex:1;min-width:240px;max-width:460px;font-family:inherit;font-size:1.05rem;font-weight:800;min-height:52px;padding:10px 18px;border-radius:16px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff}
+.search::placeholder{color:rgba(255,255,255,.6)}
+.search:focus{outline:3px solid var(--acc);background:rgba(255,255,255,.16)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.chip{border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-weight:800;font-size:.95rem;padding:9px 16px;border-radius:99px;cursor:pointer;min-height:44px}
+.chip.on{background:#fff;color:var(--pri-d);border-color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,380px));justify-content:center;gap:18px}
+.card{background:#fff;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 16px 44px rgba(0,0,0,.35);transition:transform .18s,box-shadow .18s}
+.card:hover{transform:translateY(-5px);box-shadow:0 22px 54px rgba(109,40,217,.5)}
+.thumb{height:170px;display:block;position:relative;overflow:hidden}
+.thumb svg{width:100%;height:100%;display:block}
+.badge{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.92);color:var(--pri-d);font-size:.78rem;font-weight:900;padding:5px 11px;border-radius:99px}
+.new{left:auto;right:12px;background:var(--acc);color:#fff}
+.body{padding:18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.body h2{font-size:1.3rem;font-weight:900;line-height:1.2}
+.body p{color:var(--muted);line-height:1.45;font-size:.95rem;flex:1}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{background:var(--pri-l);color:var(--pri-d);font-size:.75rem;font-weight:900;padding:4px 10px;border-radius:99px}
+.links{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.links a{font-size:.78rem;font-weight:800;color:var(--pri);text-decoration:none;border:2px solid var(--line);border-radius:10px;padding:4px 9px}
+.links a:hover{border-color:var(--pri)}
+.acts{display:flex;gap:8px;margin-top:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:50px;padding:10px 16px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);font-family:inherit;font-weight:900;font-size:1rem;cursor:pointer;text-decoration:none;transition:transform .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn:focus-visible,.chip:focus-visible{outline:4px solid var(--acc);outline-offset:2px}
+.btn-p{flex:1;background:var(--pri);border-color:var(--pri);color:#fff}
+.empty{color:#fff;text-align:center;padding:40px;opacity:.8}
+footer{color:rgba(255,255,255,.75);text-align:center;margin-top:36px;line-height:1.6;font-size:.92rem}
+footer b{color:#fff}
+.fxb{position:fixed;right:14px;bottom:14px;z-index:5;border:2px solid rgba(255,255,255,.3);background:rgba(11,16,38,.6);color:#fff;font-family:inherit;font-weight:800;border-radius:12px;padding:8px 12px;cursor:pointer}
+.modal{position:fixed;inset:0;background:rgba(5,8,25,.8);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal[hidden]{display:none}
+.mbox{background:#fff;border-radius:24px;padding:24px;text-align:center;max-width:460px;width:100%}
+.mbox h3{font-size:1.3rem;font-weight:900;color:var(--pri-d);margin-bottom:12px}
+#qr{display:flex;justify-content:center;margin:10px 0}
+#qr img,#qr svg{width:min(320px,70vw);height:auto;image-rendering:pixelated}
+.murl{font-size:.9rem;word-break:break-all;color:var(--muted);margin:8px 0 14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1E1B4B;color:#fff;padding:12px 20px;border-radius:14px;font-weight:800;z-index:30}
+@media(max-width:600px){h1{font-size:1.7rem}.grid{grid-template-columns:1fr}.wrap{padding:14px 12px 30px}header{padding:16px 4px}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="wrap">
+ <header>
+  <div class="logo" aria-hidden="true"></div>
+  <div class="kick">Dijital Matematik Materyalleri</div>
+  <h1>İhsan Tahiroğlu</h1>
+  <p>Ortaokul matematiği için etkileşimli oyunlar ve simülasyonlar. Akıllı tahtada, bilgisayarda, tablette ve telefonda çalışır; kurulum gerekmez.</p>
+ </header>
+ <div class="bar"><input class="search" id="q" type="search" placeholder="🔍 Materyal ara: basamak, rasyonel, abaküs…" aria-label="Materyal ara"></div>
+ <div class="chips" id="chips"></div>
+ <div style="height:20px"></div>
+ <main class="grid" id="grid"></main>
+ <footer>
+  Hazırlayan: <b>İhsan Tahiroğlu</b> • Matematik Öğretmeni<br>
+  Materyaller ücretsizdir; derslerinizde kullanabilirsiniz.
+ </footer>
+</div>
+<button class="fxb" id="fxBtn">✨ Animasyon</button>
+<div class="modal" id="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mt"><h3 id="mt"></h3><div id="qr"></div><div class="murl" id="murl"></div><div style="display:flex;gap:8px;justify-content:center"><button class="btn" id="mcopy">🔗 Bağlantıyı kopyala</button><button class="btn btn-p" style="flex:none" id="mclose">Kapat</button></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   YENİ MATERYAL EKLEMEK İÇİN: aşağıdaki listeye bir kayıt daha ekleyin.
+   url      : materyalin adresi
+   sinif    : "5. Sınıf" gibi (filtre düğmeleri bundan oluşur; boş bırakılabilir)
+   konu     : kısa konu adı
+   etiketler: arama ve rozetler için
+   gorsel   : 'galaksi' | 'rasyonel' | 'genel'
+   yeni     : true ise "Yeni" rozeti görünür
+   ===================================================================== */
+const MATERYALLER=[
+ {baslik:'Sayı Galaksisi: Basamak Kaşifleri',url:'https://ihsantahiroglu.github.io/sayi-galaksisi/',sinif:'5. Sınıf',konu:'Doğal Sayılar',
+  aciklama:'Çok basamaklı doğal sayılar: okuma-yazma, basamak ve bölükler, abaküs, çözümleme, Mısır sembolleri, karşılaştırma. 9 gezegen görevi, tanı testi, 7 simülasyon istasyonu ve sınıf yarışması.',
+  etiketler:['oyun','simülasyon','basamak','bölük','abaküs','çözümleme','sınıf yarışması'],gorsel:'galaksi',yeni:true,
+  baglantilar:[['Basamak Tablosu','#lab-tablo'],['Okunuş','#lab-okunus'],['Abaküs','#lab-abakus'],['Çözümleme','#lab-cozum'],['Mısır','#lab-misir'],['Terazi','#lab-terazi'],['Kartlar','#lab-kart'],['Sınıf Yarışması','#yarisma']]},
+ {baslik:'Rasyonel Sayılar: Hassas Kalibrasyon ve Karşılaştırma Laboratuvarı',url:'https://ihsantahiroglu.github.io/rasyonelsayisiralama/',sinif:'',konu:'Rasyonel Sayılar',
+  aciklama:'Rasyonel sayıları sayı doğrusunda konumlandırma, karşılaştırma ve sıralama üzerine etkileşimli laboratuvar.',
+  etiketler:['simülasyon','rasyonel sayılar','sıralama','karşılaştırma','sayı doğrusu'],gorsel:'rasyonel'}
+];
+const ART={
+ galaksi:`<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="g1" cx="35%" cy="30%"><stop offset="0" stop-color="#FDE68A"/><stop offset=".55" stop-color="#F97316"/><stop offset="1" stop-color="#9A3412"/></radialGradient><radialGradient id="g2" cx="35%" cy="30%"><stop offset="0" stop-color="#BAE6FD"/><stop offset=".5" stop-color="#0284C7"/><stop offset="1" stop-color="#065F46"/></radialGradient><linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E1B4B"/><stop offset="1" stop-color="#4C1D95"/></linearGradient></defs><rect width="400" height="170" fill="url(#bg1)"/>${Array.from({length:40},(_,i)=>`<circle cx="${(i*97)%400}" cy="${(i*53)%170}" r="${i%5?0.8:1.6}" fill="#fff" opacity=".7"/>`).join('')}<circle cx="120" cy="88" r="44" fill="url(#g1)"/><ellipse cx="120" cy="90" rx="70" ry="13" fill="none" stroke="#fff" stroke-width="3" opacity=".8" transform="rotate(-15 120 90)"/><circle cx="300" cy="60" r="22" fill="url(#g2)"/><text x="250" y="130" font-family="Nunito,sans-serif" font-weight="900" font-size="26" fill="#fff">149 597 890</text><path d="M20 30 L80 55" stroke="#BAE6FD" stroke-width="2" stroke-linecap="round" opacity=".8"/><circle cx="80" cy="55" r="3" fill="#fff"/></svg>`,
+ rasyonel:`<svg viewBox="0 0 400 170" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0C4A6E"/><stop offset="1" stop-color="#1E1B4B"/></linearGradient></defs><rect width="400" height="170" fill="url(#bg2)"/><line x1="30" y1="100" x2="370" y2="100" stroke="#fff" stroke-width="4" stroke-linecap="round"/>${[-2,-1,0,1,2].map((v,i)=>`<line x1="${60+i*70}" y1="90" x2="${60+i*70}" y2="110" stroke="#fff" stroke-width="3"/><text x="${60+i*70}" y="135" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="16" fill="#fff">${v}</text>`).join('')}<circle cx="153" cy="100" r="9" fill="#F97316"/><text x="153" y="72" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="18" fill="#FDBA74">−2/3</text><circle cx="305" cy="100" r="9" fill="#A78BFA"/><text x="305" y="72" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="18" fill="#C4B5FD">3/2</text><text x="200" y="40" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="20" fill="#fff">&lt;</text></svg>`,
+ genel:`<svg viewBox="0 0 400 170"><rect width="400" height="170" fill="#4C1D95"/><text x="200" y="105" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="60" fill="#fff">π ∑ √</text></svg>`};
+const $=s=>document.querySelector(s),S={fx:(()=>{try{return localStorage.getItem('hub_fx')!=='0'}catch(e){return true}})()};
+let FILT='Tümü';
+const norm=s=>s.toLocaleLowerCase('tr-TR');
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),2000)}
+function copy(u){try{navigator.clipboard.writeText(u).then(()=>toast('Bağlantı kopyalandı ✔'),()=>toast(u))}catch(e){toast(u)}}
+function chips(){const set=['Tümü',...new Set(MATERYALLER.map(m=>m.konu))];$('#chips').innerHTML=set.map(c=>`<button class="chip${c===FILT?' on':''}" data-c="${c}">${c}</button>`).join('');
+ document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{FILT=b.dataset.c;chips();render()})}
+function render(){const q=norm($('#q').value.trim());const L=MATERYALLER.filter(m=>(FILT==='Tümü'||m.konu===FILT)&&(!q||norm([m.baslik,m.aciklama,m.konu,m.sinif,...(m.etiketler||[])].join(' ')).includes(q)));
+ $('#grid').innerHTML=L.length?L.map((m,i)=>`<article class="card"><a class="thumb" href="${m.url}" aria-label="${m.baslik} aç">${ART[m.gorsel]||ART.genel}${m.sinif||m.konu?`<span class="badge">${[m.sinif,m.konu].filter(Boolean).join(' • ')}</span>`:''}${m.yeni?'<span class="badge new">Yeni</span>':''}</a>
+  <div class="body"><h2>${m.baslik}</h2><p>${m.aciklama}</p><div class="tags">${(m.etiketler||[]).slice(0,4).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+  ${m.baglantilar?`<div class="links">${m.baglantilar.map(([l,h])=>`<a href="${m.url}${h}">${l}</a>`).join('')}</div>`:''}
+  <div class="acts"><a class="btn btn-p" href="${m.url}">▶ Aç</a><button class="btn" data-qr="${MATERYALLER.indexOf(m)}" title="Sınıfta göstermek için QR kod">📱 QR</button><button class="btn" data-cp="${MATERYALLER.indexOf(m)}" title="Bağlantıyı kopyala">🔗</button></div></div></article>`).join(''):'<div class="empty">Aradığın materyal bulunamadı.</div>';
+ document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>copy(MATERYALLER[+b.dataset.cp].url));
+ document.querySelectorAll('[data-qr]').forEach(b=>b.onclick=()=>openQR(MATERYALLER[+b.dataset.qr]))}
+function openQR(m){$('#mt').textContent=m.baslik;$('#murl').textContent=m.url;const box=$('#qr');
+ try{const qr=qrcode(0,'M');qr.addData(m.url);qr.make();box.innerHTML=qr.createSvgTag({cellSize:8,margin:2})}catch(e){box.innerHTML='<p class="murl">QR kod oluşturulamadı (internet bağlantısını kontrol edin).</p>'}
+ $('#mcopy').onclick=()=>copy(m.url);$('#modal').hidden=false;$('#mclose').focus()}
+$('#mclose').onclick=()=>$('#modal').hidden=true;$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').hidden=true};
+addEventListener('keydown',e=>{if(e.key==='Escape')$('#modal').hidden=true});
+$('#q').oninput=render;chips();render();
+/* ===== Canlı galaksi arka planı ===== */
+const SKY={c:null,x:null,w:0,h:0,stars:[],gals:[],comets:[],meteors:[],neb:null,t0:0,next:0,nextM:0,mx:0,my:0,tx:0,ty:0,raf:0};
+function makeGalaxy(size,arms,hue,twist){const c=document.createElement('canvas');c.width=c.height=size;const x=c.getContext('2d'),r=size/2;
+ const g=x.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,`hsla(${hue},100%,96%,.95)`);g.addColorStop(.07,`hsla(${hue},95%,82%,.6)`);g.addColorStop(.3,`hsla(${hue},75%,55%,.14)`);g.addColorStop(1,'hsla(0,0%,0%,0)');x.fillStyle=g;x.fillRect(0,0,size,size);
+ for(let i=0;i<3400;i++){const arm=i%arms,t=Math.pow(Math.random(),.75),ang=t*twist+arm*2*Math.PI/arms+(Math.random()-.5)*(.22+.55*(1-t)),d=t*r*.95+(Math.random()-.5)*r*.05;
+  const px=r+Math.cos(ang)*d,py=r+Math.sin(ang)*d,sz=Math.random()*1.2+.3;x.fillStyle=`hsla(${hue+(Math.random()*70-35)},85%,${68+Math.random()*28}%,${(1-t)*.65+.15})`;x.fillRect(px,py,sz,sz)}
+ for(let i=0;i<60;i++){const t=Math.random(),ang=t*twist+(i%arms)*2*Math.PI/arms,d=t*r*.9;x.fillStyle=`hsla(${(hue+180)%360},90%,75%,.5)`;x.beginPath();x.arc(r+Math.cos(ang)*d,r+Math.sin(ang)*d,1.6,0,6.283);x.fill()}
+ return c}
+function makeNebula(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');
+ [[.8,.15,.5,'268,85%,48%',.26],[.1,.88,.55,'205,90%,42%',.22],[.55,.55,.4,'320,75%,45%',.11],[.28,.22,.32,'235,85%,55%',.1],[.95,.75,.3,'190,90%,45%',.08]].forEach(([fx,fy,fr,col,a])=>{const g=x.createRadialGradient(fx*w,fy*h,0,fx*w,fy*h,fr*Math.max(w,h));g.addColorStop(0,`hsla(${col},${a})`);g.addColorStop(.5,`hsla(${col},${a*.4})`);g.addColorStop(1,'hsla(0,0%,0%,0)');x.fillStyle=g;x.fillRect(0,0,w,h)});
+ for(let i=0;i<w*h/700;i++){x.fillStyle=`rgba(255,255,255,${Math.random()*.1})`;x.fillRect(Math.random()*w,Math.random()*h,1,1)}
+ return c}
+function initSky(){const c=$('#stars');SKY.c=c;SKY.x=c.getContext('2d');const dpr=Math.min(devicePixelRatio||1,1.5);SKY.w=innerWidth;SKY.h=innerHeight;c.width=Math.round(SKY.w*dpr);c.height=Math.round(SKY.h*dpr);SKY.x.setTransform(dpr,0,0,dpr,0,0);
+ const N=Math.min(650,Math.floor(SKY.w*SKY.h/2600));SKY.stars=Array.from({length:N},()=>{const z=Math.pow(Math.random(),2.3);return {x:Math.random()*SKY.w,y:Math.random()*SKY.h,z,r:.3+z*1.8,ph:Math.random()*6.283,sp:.5+Math.random()*2.5,col:Math.random()<.2?(Math.random()<.5?'#FDE68A':'#BAE6FD'):'#FFFFFF'}});
+ SKY.neb=makeNebula(Math.ceil(SKY.w/2),Math.ceil(SKY.h/2));
+ if(!SKY.gals.length)SKY.gals=[{img:makeGalaxy(380,2,265,7),fx:.84,fy:.2,sc:1,tilt:.42,rot:0,vr:.00004,a:.6,z:.18,base:-.5},{img:makeGalaxy(280,3,200,5.5),fx:.08,fy:.74,sc:.8,tilt:.58,rot:1,vr:-.00005,a:.45,z:.12,base:.8},{img:makeGalaxy(200,2,325,6.5),fx:.55,fy:.93,sc:.55,tilt:.32,rot:2,vr:.00006,a:.32,z:.07,base:.2},{img:makeGalaxy(150,4,40,4.5),fx:.32,fy:.1,sc:.45,tilt:.78,rot:3,vr:-.00008,a:.3,z:.05,base:1.2}];
+ SKY.comets=[];SKY.meteors=[];const n=performance.now();SKY.next=n+2500;SKY.nextM=n+1200}
+function spawnComet(){const W=SKY.w,H=SKY.h,L=Math.random()<.5,sp=.12+Math.random()*.16,an=.18+Math.random()*.3;
+ SKY.comets.push({x:L?-120:W+120,y:Math.random()*H*.55,vx:(L?1:-1)*sp*Math.cos(an),vy:sp*Math.sin(an),len:180+Math.random()*200,w:1.8+Math.random()*1.8,hue:Math.random()<.55?190:42})}
+function spawnMeteor(){const W=SKY.w,H=SKY.h,sp=.9+Math.random()*.7,an=.5+Math.random()*.4,L=Math.random()<.5;SKY.meteors.push({x:Math.random()*W,y:Math.random()*H*.4,vx:(L?1:-1)*sp*Math.cos(an),vy:sp*Math.sin(an),len:70+Math.random()*60,life:0,max:500+Math.random()*400})}
+function drawTrail(X,o,a0,w,hue){const m=Math.hypot(o.vx,o.vy),tx=o.x-o.vx/m*o.len,ty=o.y-o.vy/m*o.len,gr=X.createLinearGradient(o.x,o.y,tx,ty);
+ gr.addColorStop(0,`hsla(${hue},100%,92%,${a0})`);gr.addColorStop(.25,`hsla(${hue},95%,72%,${a0*.45})`);gr.addColorStop(1,'hsla(0,0%,100%,0)');X.strokeStyle=gr;X.lineCap='round';
+ X.globalAlpha=1;X.lineWidth=w;X.beginPath();X.moveTo(o.x,o.y);X.lineTo(tx,ty);X.stroke();X.globalAlpha=.22;X.lineWidth=w*4.5;X.stroke();X.globalAlpha=1}
+function skyFrame(t){const X=SKY.x,W=SKY.w,H=SKY.h,dt=Math.min(50,t-(SKY.t0||t));SKY.t0=t;X.clearRect(0,0,W,H);
+ SKY.tx+=(SKY.mx-SKY.tx)*.04;SKY.ty+=(SKY.my-SKY.ty)*.04;const px=SKY.tx,py=SKY.ty;
+ X.globalCompositeOperation='source-over';X.globalAlpha=1;X.drawImage(SKY.neb,-px*14-24,-py*14-24,W+48,H+48);
+ X.globalCompositeOperation='lighter';
+ for(const g of SKY.gals){g.rot+=g.vr*dt;const sz=g.img.width*g.sc*Math.max(.55,Math.min(W,H)/750);X.save();X.globalAlpha=g.a;X.translate(g.fx*W-px*g.z*140,g.fy*H-py*g.z*140);X.rotate(g.base);X.scale(1,g.tilt);X.rotate(g.rot);X.drawImage(g.img,-sz/2,-sz/2,sz,sz);X.restore()}
+ for(const s of SKY.stars){s.x-=s.z*.005*dt;if(s.x<-6)s.x=W+6;const tw=.5+.5*Math.sin(t*.001*s.sp+s.ph),a=(.22+.78*s.z)*(.35+.65*tw),x=s.x-px*s.z*46,y=s.y-py*s.z*46;
+  X.globalAlpha=a;X.fillStyle=s.col;X.beginPath();X.arc(x,y,s.r,0,6.283);X.fill();
+  if(s.z>.75&&tw>.8){const k=(tw-.8)*5;X.globalAlpha=a*.55*k;X.fillRect(x-s.r*5,y-.6,s.r*10,1.2);X.fillRect(x-.6,y-s.r*5,1.2,s.r*10)}}
+ if(t>SKY.next){spawnComet();SKY.next=t+7000+Math.random()*9000}
+ if(t>SKY.nextM){spawnMeteor();SKY.nextM=t+2500+Math.random()*5000}
+ for(let i=SKY.comets.length-1;i>=0;i--){const c=SKY.comets[i];c.x+=c.vx*dt;c.y+=c.vy*dt;drawTrail(X,c,.95,c.w,c.hue);
+  const hg=X.createRadialGradient(c.x,c.y,0,c.x,c.y,c.w*7);hg.addColorStop(0,'rgba(255,255,255,1)');hg.addColorStop(.35,`hsla(${c.hue},100%,80%,.6)`);hg.addColorStop(1,'rgba(255,255,255,0)');X.fillStyle=hg;X.beginPath();X.arc(c.x,c.y,c.w*7,0,6.283);X.fill();
+  if(c.x<-500||c.x>W+500||c.y>H+400)SKY.comets.splice(i,1)}
+ for(let i=SKY.meteors.length-1;i>=0;i--){const m=SKY.meteors[i];m.x+=m.vx*dt;m.y+=m.vy*dt;m.life+=dt;const f=Math.sin(Math.PI*Math.min(1,m.life/m.max));drawTrail(X,m,f*.9,1.2,210);if(m.life>m.max)SKY.meteors.splice(i,1)}
+ X.globalCompositeOperation='source-over';X.globalAlpha=1;
+ if(S.fx!==false&&!document.hidden)SKY.raf=requestAnimationFrame(skyFrame)}
+function skyStart(){cancelAnimationFrame(SKY.raf);initSky();const rm=matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(S.fx===false||rm){SKY.t0=0;const f=S.fx;S.fx=false;skyFrame(performance.now());S.fx=f}else SKY.raf=requestAnimationFrame(skyFrame)}
+addEventListener('pointermove',e=>{SKY.mx=e.clientX/innerWidth-.5;SKY.my=e.clientY/innerHeight-.5},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.fx!==false){cancelAnimationFrame(SKY.raf);SKY.t0=0;SKY.raf=requestAnimationFrame(skyFrame)}});
+
+const fxb=()=>{$('#fxBtn').textContent=S.fx!==false?'✨ Animasyon açık':'✨ Animasyon kapalı'};
+$('#fxBtn').onclick=()=>{S.fx=S.fx===false;try{localStorage.setItem('hub_fx',S.fx?'1':'0')}catch(e){}fxb();skyStart()};
+addEventListener('resize',()=>{clearTimeout(window.__rs);window.__rs=setTimeout(skyStart,250)});
+fxb();skyStart();
+</script>
+</body>
+</html>
